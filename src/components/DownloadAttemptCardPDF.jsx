@@ -1,7 +1,7 @@
 import React from 'react';
 import html2pdf from 'html2pdf.js';
 
-const DownloadAttemptCardPDF = ({ athletes }) => {
+const DownloadAttemptCardPDF = ({ athletes = [] }) => {
   const generatePDF = () => {
     console.log('Generate PDF clicked');
     console.log('Athletes:', athletes);
@@ -9,7 +9,7 @@ const DownloadAttemptCardPDF = ({ athletes }) => {
     // Check if athletes is valid
     if (!Array.isArray(athletes) || athletes.length === 0) {
       console.error('No athletes data provided or invalid data');
-      alert('No athletes data available to generate PDF.');
+      alert('No athletes data available to generate PDF. Please ensure athletes are loaded.');
       return;
     }
 
