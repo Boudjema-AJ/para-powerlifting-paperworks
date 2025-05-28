@@ -1,5 +1,4 @@
 import React from "react";
-import DownloadAttemptCardPDF from "./DownloadAttemptCardPDF";
 
 function AttemptCard({ athlete }) {
   return (
@@ -37,9 +36,6 @@ function AttemptCard({ athlete }) {
           </tr>
         </tbody>
       </table>
-      <div style={{ margin: "20px 0", textAlign: "center" }}>
-        <DownloadAttemptCardPDF athlete={athlete} />
-      </div>
     </div>
   );
 }
