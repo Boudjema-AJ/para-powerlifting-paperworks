@@ -16,23 +16,23 @@ function AttemptCard({ athlete }) {
         </thead>
         <tbody>
           <tr>
-            <td style={{ border: "1px solid #888" }}>Lot No.</td>
+            <td style={{ border: "1px solid #888" }}>LoNo.</td>
             <td style={{ border: "1px solid #888" }}>{athlete.lotn || ""}</td>
             <td style={{ border: "1px solid #888" }}>Name</td>
             <td style={{ border: "1px solid #888" }}>{athlete.name || ""}</td>
-            <td style={{ border: "1px solid #888" }}>Team/Club</td>
+            <td style={{ border: "1px solid #888" }}>TeamClub</td>
             <td style={{ border: "1px solid #888" }}>{athlete.team || ""}</td>
-            <td style={{ border: "1px solid #888" }}>Date of Birth</td>
+            <td style={{ border: "1px solid #888" }}>DateofBirth</td>
             <td style={{ border: "1px solid #888" }}>{athlete.dob || ""}</td>
           </tr>
           <tr>
-            <td style={{ border: "1px solid #888" }}>Cat  Grp</td>
+            <td style={{ border: "1px solid #888" }}>CatGrp</td>
             <td style={{ border: "1px solid #888" }}>{athlete.category || ""}</td>
-            <td style={{ border: "1px solid #888" }}>Body Weight</td>
+            <td style={{ border: "1px solid #888" }}>BodyWeight</td>
             <td style={{ border: "1px solid #888" }}>{athlete.bodyWeight || ""}</td>
-            <td style={{ border: "1px solid #888" }}>Rack Height</td>
+            <td style={{ border: "1px solid #888" }}>RackHeight</td>
             <td style={{ border: "1px solid #888" }}>{athlete.rack || ""}</td>
-            <td style={{ border: "1px solid #888" }}>Age Group</td>
+            <td style={{ border: "1px solid #888" }}>AgeGroup</td>
             <td style={{ border: "1px solid #888" }}>{athlete.ageGroup || ""}</td>
           </tr>
         </tbody>

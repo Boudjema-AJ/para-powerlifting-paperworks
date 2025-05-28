@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import AttemptCard from "./AttemptCard";
-import ListPdfFields from "./ListPdfFields"; // <-- import here
+import ListPdfFields from "./ListPdfFields";
+import DownloadAttemptCardPDF from "./DownloadAttemptCardPDF";
 
 function AttemptCards({ athletes }) {
   const sessions = Array.from(
@@ -15,7 +16,7 @@ function AttemptCards({ athletes }) {
   return (
     <div>
       <h2>Attempt Cards</h2>
-      <ListPdfFields /> {/* <-- add here! */}
+      <ListPdfFields />
       <div style={{ marginBottom: 20 }}>
         <b>Select Session:</b>
         {sessions.map((session) => (
@@ -35,6 +36,7 @@ function AttemptCards({ athletes }) {
             Session {session}
           </button>
         ))}
+        {selectedSession && <DownloadAttemptCardPDF athletes={athletesInSession} />}
       </div>
       {selectedSession && (
         <div>
