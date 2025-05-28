@@ -1,0 +1,45 @@
+import React from "react";
+import "./AttemptCardExcel.css";
+
+export default function AttemptCardHtml({ athlete }) {
+  return (
+    <div style={{ overflowX: "auto", background: "#fff", margin: 24 }}>
+      <table
+        border="1"
+        cellPadding="4"
+        cellSpacing="0"
+        style={{
+          borderCollapse: "collapse",
+          width: "100%",
+          minWidth: "900px",
+        }}
+      >
+        <tbody>
+          <tr>
+            <td className="xl65" colSpan={8}>Attempt Card</td>
+          </tr>
+          <tr>
+            <td className="xl67">Lot No.</td>
+            <td className="xl68">{athlete.lotn}</td>
+            <td className="xl67">Name</td>
+            <td className="xl69">{athlete.name}</td>
+            <td className="xl67">NPC</td>
+            <td className="xl70">{athlete.team}</td>
+            <td className="xl67">Date of Birth</td>
+            <td className="xl71">{athlete.dob}</td>
+          </tr>
+          <tr>
+            <td className="xl73">Cat. / Grp.</td>
+            <td className="xl74">{athlete.category}</td>
+            <td className="xl75">Body Weight</td>
+            <td className="xl76">{athlete.bodyWeight}</td>
+            <td className="xl73">Rack Height</td>
+            <td className="xl77">{athlete.rack}</td>
+            <td className="xl73">Age Group</td>
+            <td className="xl78">{athlete.ageGroup}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  );
+}
