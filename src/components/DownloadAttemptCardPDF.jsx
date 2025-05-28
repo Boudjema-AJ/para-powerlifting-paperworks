@@ -1,36 +1,73 @@
-import React from "react";
-import { PDFDocument } from "pdf-lib";
+import React from 'react';
+import { PDFDocument } from 'pdf-lib';
 
-export default function DownloadAttemptCardPDF({ athlete }) {
-  const fillPdfTemplate = async () => {
+const DownloadAttemptCardPDF = ({ athletes }) => {
+  const generatePDF = async () => {
     try {
-      // Fetch the PDF template from /public/templates
-      const response = await fetch('/templates/attempt_card_template.pdf');
+      // Debug: Test if the PDF is accessible
+      const response = await fetch('/template/attempt_card_template.pdf');
+      if (!response.ok) {
+        throw new Error(`Failed to fetch PDF: ${response.status} ${response.statusText}`);
+      }
       const pdfBytes = await response.arrayBuffer();
+      const testDoc = await PDFDocument.load(pdfBytes); // Test load
+      console.log('PDF loaded successfully:', testDoc.getPageCount(), 'pages');
 
-      const pdfDoc = await PDFDocument.load(pdfBytes);
-      const form = pdfDoc.getForm();
+      // Group athletes by session (assuming 'session' field)
+      const sessions = {};
+      athletes.forEach(athlete => {
+        const session = athlete.session || 'DefaultSession'; // Fallback if session is undefined
+        if (!sessions[session]) sessions[session] = [];
+        sessions[session].push(athlete);
+      });
 
-      // Fill out form fields (must match your PDF form field names)
-      form.getTextField("LotNo").setText(athlete.lotn || "");
-      form.getTextField("Name").setText(athlete.name || "");
-      // ... repeat for other fields
+      // Generate one PDF per session
+      for (const session of Object.keys(sessions)) {
+        const sessionAthletes = sessions[session];
+        const pdfDoc = await PDFDocument.create();
 
-      const bytes = await pdfDoc.save();
-      const blob = new Blob([bytes], { type: "application/pdf" });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = `attempt_card_${athlete.name || "athlete"}.pdf`;
-      link.click();
-    } catch (err) {
-      alert("Error generating PDF: " + err.message);
-      console.error(err);
+        // Process each athlete (one per page for now)
+        for (const athlete of sessionAthletes) {
+          const pdfBytes = await fetch('/template/attempt_card_template.pdf').then(res => {
+            if (!res.ok) throw new Error('Template not found');
+            return res.arrayBuffer();
+          });
+          const templateDoc = await PDFDocument.load(pdfBytes);
+          const [templatePage] = await pdfDoc.copyPages(templateDoc, [0]);
+          pdfDoc.addPage(templatePage);
+
+          // Fill form fields (assumed field names)
+          const form = pdfDoc.getForm();
+          form.getTextField('Name').setText(athlete.nom || '');
+          form.getTextField('NPC').setText(athlete.npc || '');
+          form.getTextField('DateOfBirth').setText(athlete.dateOfBirth || '');
+          form.getTextField('BodyWeight').setText(athlete.poids || '');
+          form.getTextField('RackHeight').setText(athlete.rackHeight || '');
+          form.getTextField('AgeGroup').setText(athlete.ageGroup || '');
+          form.getTextField('Attempt1').setText(athlete.attempt1 || '');
+          form.getTextField('Attempt2').setText(athlete.attempt2 || '');
+          form.getTextField('Attempt3').setText(athlete.attempt3 || '');
+        }
+
+        // Save the PDF
+        const pdfBytes = await pdfDoc.save();
+        const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `athlete-cards-${session}.pdf`;
+        link.click();
+        URL.revokeObjectURL(url);
+      }
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert(`Failed to generate PDF: ${error.message}. Check console for details.`);
     }
   };
 
   return (
-    <button onClick={fillPdfTemplate}>
-      Download Attempt Card as PDF
-    </button>
+    <button onClick={generatePDF}>Download Athlete Cards</button>
   );
-}
+};
+
+export default DownloadAttemptCardPDF;
