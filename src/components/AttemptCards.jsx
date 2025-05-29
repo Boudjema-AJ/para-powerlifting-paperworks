@@ -1,9 +1,8 @@
-import React, { useState, useRef } from "react";
-import AttemptCard from "./AttemptCard";
+import React, { useState } from "react";
 import ListPdfFields from "./ListPdfFields";
+import ExcelJS from "exceljs";
+import JSZip from "jszip";
 import Modal from "react-modal";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
 
 Modal.setAppElement('#root');
 
@@ -12,49 +11,68 @@ function AttemptCards({ athletes }) {
     new Set(athletes.map((a) => a.session).filter(Boolean))
   );
   const [selectedSession, setSelectedSession] = useState(null);
-  const [modalOpen, setModalOpen] = useState(false);
-  const cardRefs = useRef([]);
 
   const athletesInSession = selectedSession
     ? athletes.filter((a) => a.session === selectedSession)
     : [];
 
-  const openSessionModal = (session) => {
-    setSelectedSession(session);
-    setModalOpen(true);
-    // Reset refs for the new session
-    cardRefs.current = [];
+  // Fill data into a worksheet
+  const fillCardData = (ws, athlete) => {
+    ws.getCell("B4").value = athlete.lotn || "";
+    ws.getCell("D4").value = athlete.name || "";
+    ws.getCell("F4").value = athlete.team || "";
+    ws.getCell("H4").value = athlete.dob || "";
+    ws.getCell("B5").value = athlete.category || "";
+    ws.getCell("D5").value = athlete.bodyWeight || "";
+    ws.getCell("F5").value = athlete.rack || "";
+    ws.getCell("H5").value = athlete.ageGroup || "";
   };
 
-  // PDF download handler for all cards in the modal
-  const downloadCardsAsPDF = async () => {
+  // Download ZIP of single card Excels
+  const downloadAllCardsAsZip = async () => {
     if (!athletesInSession.length) return;
-    const pdf = new jsPDF("p", "mm", "a4");
-    for (let i = 0; i < athletesInSession.length; i++) {
-      const cardDiv = cardRefs.current[i];
-      if (!cardDiv) continue;
-      const canvas = await html2canvas(cardDiv, { scale: 2 });
-      const imgData = canvas.toDataURL("image/png");
-      const imgProps = pdf.getImageProperties(imgData);
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-      if (i > 0) pdf.addPage();
-      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+    try {
+      const response = await fetch('/template/attempt_card_template.xlsx');
+      if (!response.ok) throw new Error("Template not found");
+      const arrayBuffer = await response.arrayBuffer();
+
+      const zip = new JSZip();
+
+      // Sequentially generate each file
+      for (let i = 0; i < athletesInSession.length; ++i) {
+        const athlete = athletesInSession[i];
+        const workbook = new ExcelJS.Workbook();
+        await workbook.xlsx.load(arrayBuffer);
+        const ws = workbook.worksheets[0];
+        fillCardData(ws, athlete);
+
+        let athleteName = (athlete.name || `athlete_${i+1}`).toLowerCase().replace(/[^a-z0-9]/g, "_");
+        let fileName = `attempt_card_${athleteName || (i+1)}.xlsx`;
+        const buf = await workbook.xlsx.writeBuffer();
+        zip.file(fileName, buf);
+      }
+
+      const zipBlob = await zip.generateAsync({ type: "blob" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(zipBlob);
+      link.download = `attempt_cards_session_${selectedSession}.zip`;
+      link.click();
+    } catch (err) {
+      alert("Error generating ZIP: " + err.message);
+      console.error(err);
     }
-    pdf.save(`attempt_cards_session_${selectedSession}.pdf`);
   };
 
   return (
-    <div className="attempt-cards-page">
-      {/* Controls Bar */}
+    <div>
       <div className="controls-bar">
         <ListPdfFields />
         <span style={{ marginLeft: 12 }}>Select Session:</span>
-        {sessions.map((session) => (
+        {sessions.map(session => (
           <button
             key={session}
             className={selectedSession === session ? "active" : ""}
-            onClick={() => openSessionModal(session)}
+            onClick={() => setSelectedSession(session)}
             style={{
               marginLeft: 8,
               background: selectedSession === session ? "#1976d2" : "#eee",
@@ -69,52 +87,29 @@ function AttemptCards({ athletes }) {
             Session {session}
           </button>
         ))}
+        {selectedSession && (
+          <button
+            style={{
+              marginLeft: 16,
+              background: "#43a047",
+              color: "#fff",
+              border: "none",
+              borderRadius: 4,
+              padding: "6px 16px",
+              cursor: "pointer",
+              fontWeight: "bold"
+            }}
+            onClick={downloadAllCardsAsZip}
+          >
+            Download All Attempt Cards (ZIP)
+          </button>
+        )}
       </div>
-
-      {/* Section Title */}
       {selectedSession && (
         <h2 style={{ marginTop: 24 }}>
           Attempt Cards for Session {selectedSession} ({athletesInSession.length} athletes)
         </h2>
       )}
-
-      {/* Attempt Cards List */}
-      {selectedSession && athletesInSession.length > 0 && athletesInSession.map((athlete) => (
-        <div className="attempt-card" key={athlete.id}>
-          <AttemptCard athlete={athlete} />
-        </div>
-      ))}
-
-      {/* Modal for all cards in session */}
-      <Modal
-        isOpen={modalOpen}
-        onRequestClose={() => setModalOpen(false)}
-        contentLabel="Session Attempt Cards"
-        style={{ content: { width: '90%', maxWidth: '1100px', margin: 'auto', height: '90%', overflow: 'auto' } }}
-      >
-        <div>
-          <h2>
-            Attempt Cards for Session {selectedSession} ({athletesInSession.length} athletes)
-          </h2>
-          <div id="session-cards-modal-content" style={{ background: "#fff", padding: 20 }}>
-            {athletesInSession.map((athlete, idx) => (
-              <div
-                className="attempt-card"
-                key={athlete.id}
-                style={{ margin: "20px auto", breakAfter: "page" }}
-                ref={el => cardRefs.current[idx] = el}
-              >
-                <AttemptCard athlete={athlete} hideExcelDownload />
-              </div>
-            ))}
-          </div>
-          <div style={{ marginTop: 30, display: "flex", justifyContent: "flex-end", gap: 12 }}>
-            <button onClick={downloadCardsAsPDF}>Download All as PDF</button>
-            <button onClick={() => window.print()}>Print</button>
-            <button onClick={() => setModalOpen(false)}>Close</button>
-          </div>
-        </div>
-      </Modal>
     </div>
   );
 }

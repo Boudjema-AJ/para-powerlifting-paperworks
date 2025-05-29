@@ -32,7 +32,7 @@ export default function DownloadAttemptCardExcel({ athlete }) {
       const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
-      link.download = `attempt_card_${athlete.name || "athlete"}.xlsx`;
+      link.download = `attempt_card_${athlete.name ? athlete.name.replace(/[^a-z0-9]/gi, '_').toLowerCase() : "athlete"}.xlsx`;
       link.click();
     } catch (err) {
       alert("Error generating Excel: " + err.message);

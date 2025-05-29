@@ -1,6 +1,7 @@
 import React from "react";
+import DownloadAttemptCardExcel from "./DownloadAttemptCardExcel";
 
-function AttemptCard({ athlete }) {
+function AttemptCard({ athlete, hideExcelDownload }) {
   return (
     <div className="attempt-card" style={{
       border: "1px solid #888", margin: "24px auto", width: 700, padding: 0, background: "#fff"
@@ -36,6 +37,11 @@ function AttemptCard({ athlete }) {
           </tr>
         </tbody>
       </table>
+      {!hideExcelDownload && (
+        <div style={{ margin: "12px 0", textAlign: "right" }}>
+          <DownloadAttemptCardExcel athlete={athlete} />
+        </div>
+      )}
     </div>
   );
 }
