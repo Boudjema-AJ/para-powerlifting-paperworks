@@ -3,7 +3,7 @@ import Dashboard from "./components/Dashboard";
 import Athletes from "./components/Athletes";
 import Competition from "./components/Competition";
 import WeighInList from "./components/WeighInList";
-import AttemptCards from "./components/AttemptCards";
+import AttemptCardsManager from './components/AttemptCardsManager';
 
 import Results from "./components/Results";
 import "./styles.css";
@@ -61,13 +61,12 @@ function App() {
           />
         );
 		
-		case "attemptcards":
-		  return (
-			<AttemptCards
-			  athletes={athletes}
-			  competitions={competitions}
-			/>
-		  );
+case "attemptcards":
+  return (
+    <AttemptCardsManager
+      athletes={athletes}
+    />
+  );
       default:
         return (
           <Dashboard
